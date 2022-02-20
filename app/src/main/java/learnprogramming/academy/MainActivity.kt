@@ -87,6 +87,28 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun performOperation(value: String, operation: String) {
-        displayOperation.text = operation
+        if (operand1 == null) {
+            operand1 = value.toDouble()
+        } else {
+            operand2 = value.toDouble()
+            if (pendingOperation == "=") {
+                pendingOperation = operation
+            }
+
+            when (pendingOperation) {
+                "=" -> operand1 = operand2
+                "/" -> if (operand2 == 0.0) {
+                    operand1 = Double.NaN //made sure that no1 try to divide to 0 ;)
+                } else {
+                    operand1 = operand1!! / operand2
+                }
+                "*" -> operand1 = operand1!! * operand2
+                "-" -> operand1 = operand1!! - operand2
+                "+" -> operand1 = operand1!! + operand2
+            }
+            result.setText(operand1.toString())
+            newNumber.setText("")
+        }
+
     }
 }
