@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import java.lang.NumberFormatException
 
 class MainActivity : AppCompatActivity() {
     //    different ways to declare..
@@ -13,12 +14,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var result: EditText
     private lateinit var newNumber: EditText
 
-    //    private lateinit var displayOperation: EditText
+    //    private late-init var displayOperation: EditText
     private val displayOperation by lazy(LazyThreadSafetyMode.NONE) { findViewById<TextView>(R.id.opration) }
-
-    //    operands!
     private var operand1: Double? = null
-    private var operand2: Double = 0.0
     private var pendingOperation = "="
 
 
@@ -69,15 +67,16 @@ class MainActivity : AppCompatActivity() {
 
         val opListener = View.OnClickListener { v ->
             val op = (v as Button).text.toString()
-            val value = newNumber.text.toString()
-            if (value.isNotEmpty()) {
+            try {
+                val value = newNumber.text.toString().toDouble()
                 performOperation(value, op)
+            } catch (e: NumberFormatException) {
+                newNumber.setText("")
             }
             pendingOperation = op
             displayOperation.text = pendingOperation
-
-
         }
+
         buttonEquals.setOnClickListener(opListener)
         buttonDivide.setOnClickListener(opListener)
         buttonMinus.setOnClickListener(opListener)
@@ -86,25 +85,20 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun performOperation(value: String, operation: String) {
+    private fun performOperation(value: Double, operation: String) {
         if (operand1 == null) {
-            operand1 = value.toDouble()
+            operand1 = value
         } else {
-            operand2 = value.toDouble()
             if (pendingOperation == "=") {
                 pendingOperation = operation
             }
-
             when (pendingOperation) {
-                "=" -> operand1 = operand2
-                "/" -> if (operand2 == 0.0) {
-                    operand1 = Double.NaN //made sure that no1 try to divide to 0 ;)
-                } else {
-                    operand1 = operand1!! / operand2
-                }
-                "*" -> operand1 = operand1!! * operand2
-                "-" -> operand1 = operand1!! - operand2
-                "+" -> operand1 = operand1!! + operand2
+                "=" -> operand1 = value
+                "/" -> operand1 = if (value == 0.0) Double.NaN else operand1!! / value
+                //made sure that no1 try to divide to 0 ;)
+                "*" -> operand1 = operand1!! * value
+                "-" -> operand1 = operand1!! - value
+                "+" -> operand1 = operand1!! + value
             }
             result.setText(operand1.toString())
             newNumber.setText("")
